@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Is My SaaS Taxable? | TaxCloud</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* TaxCloud brand palette */
+      --tc-navy:        #002F76;
+      --tc-blue:        #0056D6;
+      --tc-dark-blue:   #0046B0;
+      --tc-orange:      #FF6600;
+      --tc-light-blue:  #88BBFF;
+      --tc-green:       #1B8A4E;
+      --tc-gray-text:   #666688;
+      --tc-bg:          #F5F7FA;
+      --tc-card-border: #E0E4EA;
+      --tc-soft-blue:   #EBF2FF;
+      --tc-very-light:  #F0F5FF;
+      --tc-light-green: #E8F5EE;
+      --tc-light-orange:#FFF0E6;
+      /* result-status colors */
+      --tc-taxable:     #B52A00;
+      --tc-conditional: #FF6600;
+      --tc-exempt:      #1B8A4E;
+      --tc-notax:       #666688;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--tc-bg);
+      color: var(--tc-navy);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--tc-blue);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .header-tag {
+      color: rgba(255,255,255,0.55);
+      font-size: 13px;
+      margin-left: 4px;
+    }
+
+    /* ── Layout ── */
+    .main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    /* ── Intro ── */
+    .intro {
+      text-align: center;
+      padding: 20px 0 40px;
+    }
+    .intro-badge {
+      display: inline-block;
+      background: var(--tc-soft-blue);
+      color: var(--tc-dark-blue);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 20px;
+    }
+    .intro h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--tc-navy);
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+    .intro p {
+      font-size: 16px;
+      color: var(--tc-gray-text);
+      max-width: 520px;
+      margin: 0 auto 32px;
+      line-height: 1.6;
+    }
+    .btn-start {
+      background: var(--tc-blue);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 14px 36px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      letter-spacing: -0.2px;
+    }
+    .btn-start:hover { background: var(--tc-dark-blue); transform: translateY(-1px); }
+    .intro-note {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--tc-gray-text);
+      opacity: 0.7;
+    }
+
+    /* ── Progress ── */
+    .progress-wrap { margin-bottom: 32px; }
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--tc-gray-text);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .progress-bar-bg {
+      height: 6px;
+      background: var(--tc-card-border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--tc-dark-blue), var(--tc-light-blue));
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Question Card ── */
+    .q-card {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .q-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--tc-gray-text);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      opacity: 0.75;
+    }
+    .q-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--tc-navy);
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+    .q-subtitle {
+      font-size: 14px;
+      color: var(--tc-gray-text);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    /* ── Option Cards ── */
+    .options-grid { display: grid; gap: 12px; }
+    .options-grid.col2 { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 520px) { .options-grid.col2 { grid-template-columns: 1fr; } }
+
+    .opt-card {
+      border: 2px solid var(--tc-card-border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      text-align: left;
+      background: white;
+      width: 100%;
+    }
+    .opt-card:hover {
+      border-color: var(--tc-blue);
+      background: var(--tc-very-light);
+      transform: translateY(-1px);
+    }
+    .opt-card.selected {
+      border-color: var(--tc-blue);
+      background: var(--tc-soft-blue);
+    }
+    .opt-icon { font-size: 24px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+    .opt-body { flex: 1; }
+    .opt-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--tc-navy);
+      margin-bottom: 3px;
+    }
+    .opt-desc {
+      font-size: 13px;
+      color: var(--tc-gray-text);
+      line-height: 1.4;
+    }
+
+    /* ── State Grid ── */
+    .state-search {
+      width: 100%;
+      border: 2px solid var(--tc-card-border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.15s;
+      color: var(--tc-navy);
+    }
+    .state-search:focus { border-color: var(--tc-blue); }
+
+    .state-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn-link {
+      background: none;
+      border: none;
+      color: var(--tc-blue);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+    }
+    .btn-link:hover { color: var(--tc-dark-blue); }
+
+    .state-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .state-chip {
+      border: 2px solid var(--tc-card-border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--tc-navy);
+      background: white;
+      transition: all 0.12s;
+      text-align: center;
+      user-select: none;
+    }
+    .state-chip:hover { border-color: var(--tc-blue); background: var(--tc-very-light); }
+    .state-chip.selected { border-color: var(--tc-blue); background: var(--tc-soft-blue); color: var(--tc-dark-blue); font-weight: 600; }
+    .state-chip.hidden { display: none; }
+
+    /* ── Nav Buttons ── */
+    .q-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 28px;
+    }
+    .btn-back {
+      background: none;
+      border: 2px solid var(--tc-card-border);
+      color: var(--tc-gray-text);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-back:hover { border-color: var(--tc-gray-text); color: var(--tc-navy); }
+    .btn-next {
+      background: var(--tc-blue);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-next:hover:not(:disabled) { background: var(--tc-dark-blue); transform: translateY(-1px); }
+    .btn-next:disabled { background: var(--tc-card-border); color: var(--tc-gray-text); cursor: not-allowed; }
+
+    /* ── Results ── */
+    .results-header { text-align: center; margin-bottom: 32px; }
+    .results-header h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--tc-navy);
+      margin-bottom: 8px;
+    }
+    .results-header p { font-size: 15px; color: var(--tc-gray-text); line-height: 1.5; }
+
+    .results-summary-bar { display: flex; gap: 12px; margin-bottom: 28px; }
+    .summary-pill {
+      flex: 1;
+      text-align: center;
+      padding: 14px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+    .summary-pill.physical   { background: var(--tc-soft-blue);   color: var(--tc-navy); }
+    .summary-pill.taxable    { background: var(--tc-light-orange); color: var(--tc-taxable); }
+    .summary-pill.conditional{ background: #FFF0E6;                color: var(--tc-conditional); }
+    .summary-pill.exempt     { background: var(--tc-light-green);  color: var(--tc-exempt); }
+    .summary-pill.notax      { background: var(--tc-bg);           color: var(--tc-notax); }
+    .summary-pill-count  { font-size: 28px; display: block; margin-bottom: 2px; }
+    .summary-pill-label  { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .results-section { margin-bottom: 28px; }
+    .results-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .results-section-title.physical    { color: var(--tc-navy); }
+    .results-section-title.taxable    { color: var(--tc-taxable); }
+    .results-section-title.conditional{ color: var(--tc-conditional); }
+    .results-section-title.exempt     { color: var(--tc-exempt); }
+    .results-section-title.notax      { color: var(--tc-notax); }
+
+    .result-row {
+      background: white;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border-left: 4px solid transparent;
+    }
+    .result-row.physical   { border-left-color: var(--tc-navy); }
+    .result-row.taxable    { border-left-color: var(--tc-taxable); }
+    .result-row.conditional{ border-left-color: var(--tc-conditional); }
+    .result-row.exempt     { border-left-color: var(--tc-exempt); }
+    .result-row.notax      { border-left-color: var(--tc-notax); }
+
+    .result-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+    .result-dot.physical   { background: var(--tc-navy); }
+    .result-dot.taxable    { background: var(--tc-taxable); }
+    .result-dot.conditional{ background: var(--tc-conditional); }
+    .result-dot.exempt     { background: var(--tc-exempt); }
+    .result-dot.notax      { background: var(--tc-notax); }
+
+    .result-state { font-weight: 700; font-size: 15px; color: var(--tc-navy); margin-bottom: 3px; }
+    .result-status {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .result-status.physical    { color: var(--tc-navy); }
+    .result-status.taxable    { color: var(--tc-taxable); }
+    .result-status.conditional{ color: var(--tc-conditional); }
+    .result-status.exempt     { color: var(--tc-exempt); }
+    .result-status.notax      { color: var(--tc-notax); }
+    .result-rationale { font-size: 13px; color: var(--tc-gray-text); line-height: 1.45; }
+    .source-link { font-size: 12px; color: var(--tc-blue); text-decoration: none; font-weight: 500; white-space: nowrap; }
+    .source-link:hover { text-decoration: underline; }
+
+    /* Branch boxes inside Q1 */
+    .branch-box { margin-top: 20px; background: var(--tc-very-light); border: 1.5px solid var(--tc-soft-blue); border-radius: 10px; padding: 18px 20px 20px; }
+    .branch-box-label { font-size: 14px; font-weight: 700; color: var(--tc-navy); margin-bottom: 14px; line-height: 1.4; }
+    .branch-inner { margin-top: 16px; padding-top: 16px; border-top: 1px solid #D0DCEF; }
+
+    /* TIC card in results */
+    .tic-card { background: white; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; border: 2px solid var(--tc-soft-blue); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .tic-eyebrow { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.9px; color: var(--tc-gray-text); margin-bottom: 10px; }
+    .tic-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+    .tic-code-num { font-size: 30px; font-weight: 900; color: var(--tc-blue); line-height: 1; }
+    .tic-code-name { font-size: 15px; font-weight: 700; color: var(--tc-navy); }
+    .tic-note { font-size: 13px; color: var(--tc-gray-text); line-height: 1.5; padding-top: 10px; border-top: 1px solid var(--tc-card-border); margin-top: 8px; }
+    .tic-warn { color: var(--tc-conditional); font-weight: 600; }
+
+    /* ── CTA Box ── */
+    .cta-box {
+      background: var(--tc-blue);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      margin-top: 36px;
+      color: white;
+    }
+    .cta-box h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; }
+    .cta-box p  { font-size: 14px; opacity: 0.85; margin-bottom: 24px; line-height: 1.5; }
+    .cta-box .btn-cta {
+      background: white;
+      color: var(--tc-blue);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 13px 32px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .cta-box .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    .cta-disclaimer {
+      margin-top: 28px;
+      padding: 16px;
+      background: var(--tc-light-orange);
+      border: 1px solid #FFD0B0;
+      border-radius: 10px;
+      font-size: 12px;
+      color: #7A3000;
+      line-height: 1.5;
+      text-align: left;
+    }
+    .restart-btn {
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--tc-gray-text);
+      opacity: 0.7;
+      cursor: pointer;
+      background: none;
+      border: none;
+      text-decoration: underline;
+    }
+    .restart-btn:hover { opacity: 1; }
+
+    .hidden { display: none !important; }
+    .fade-in { animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">
+    <img src="data:image/png;base64,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" alt="TaxCloud" style="height:28px; display:block;" />
+  </div>
+  <span class="header-tag">Sales Tax Compliance</span>
+</header>
+
+<div class="main">
+
+  <!-- INTRO -->
+  <div id="screen-intro" class="intro fade-in">
+    <div class="intro-badge">Free Tool for SaaS &amp; Digital Businesses</div>
+    <h1>Is your software or service taxable?</h1>
+    <p>Most SaaS companies don't realize their products or services are subject to sales tax until it's too late. Answer 4 quick questions and see where you're required to collect and remit sales tax in under 2 minutes.</p>
+    <button class="btn-start" onclick="startQuiz()">Determine My Taxability →</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz" class="hidden">
+    <div class="progress-wrap">
+      <div class="progress-labels">
+        <span id="progress-label">Question 1 of 4</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Q1 -->
+    <div id="q1" class="q-card fade-in">
+      <div class="q-label">Question 1 of 4</div>
+      <div class="q-title">What type of product or service do you primarily sell?</div>
+      <div class="q-subtitle">Choose the option that best describes your core offering.</div>
+      <div class="options-grid">
+        <button class="opt-card" onclick="selectQ1('saas')" data-val="saas">
+          <span class="opt-icon">☁️</span>
+          <div class="opt-body">
+            <div class="opt-title">SaaS / Cloud Software</div>
+            <div class="opt-desc">Hosted software accessed via browser or API — no download required</div>
+          </div>
+        </button>
+        <button class="opt-card" onclick="selectQ1('download')" data-val="download">
+          <span class="opt-icon">💾</span>
+          <div class="opt-body">
+            <div class="opt-title">Downloadable Software</div>
+            <div class="opt-desc">Software the customer installs locally on their device</div>
+          </div>
+        </button>
+        <button class="opt-card" onclick="selectQ1('digital')" data-val="digital">
+          <span class="opt-icon">🎬</span>
+          <div class="opt-body">
+            <div class="opt-title">Digital Content</div>
+            <div class="opt-desc">Ebooks, video, audio, courses, or other digital media</div>
+          </div>
+        </button>
+        <button class="opt-card" onclick="selectQ1('services')" data-val="services">
+          <span class="opt-icon">🧑‍💼</span>
+          <div class="opt-body">
+            <div class="opt-title">Professional Services</div>
+            <div class="opt-desc">Consulting, implementation, support, or managed services</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Branch box: software (SaaS + Download) -->
+      <div id="branch-software" class="branch-box hidden">
+        <div class="branch-box-label">Is this the same product you sell to all your customers, or built specifically for each client?</div>
+        <div class="options-grid col2">
+          <button class="opt-card" onclick="selectSoftwareType('prewritten')" data-val="prewritten">
+            <span class="opt-icon">📦</span>
+            <div class="opt-body">
+              <div class="opt-title">Same product for all customers</div>
+              <div class="opt-desc">Standard software anyone can subscribe to or purchase</div>
+            </div>
+          </button>
+          <button class="opt-card" onclick="selectSoftwareType('custom')" data-val="custom">
+            <span class="opt-icon">🛠️</span>
+            <div class="opt-body">
+              <div class="opt-title">Built custom for each client</div>
+              <div class="opt-desc">Software designed to each customer's specific requirements</div>
+            </div>
+          </button>
+        </div>
+        <div id="branch-bundling" class="branch-inner hidden">
+          <div class="branch-box-label">Does your subscription price include onboarding, implementation, or ongoing support?</div>
+          <div class="options-grid">
+            <button class="opt-card" onclick="selectBundling('none')" data-val="none">
+              <span class="opt-icon">🔌</span>
+              <div class="opt-body">
+                <div class="opt-title">Software access only</div>
+                <div class="opt-desc">No services included — customers pay for software access only</div>
+              </div>
+            </button>
+            <button class="opt-card" onclick="selectBundling('bundled')" data-val="bundled">
+              <span class="opt-icon">📎</span>
+              <div class="opt-body">
+                <div class="opt-title">Services bundled into the price</div>
+                <div class="opt-desc">Support or onboarding included but not separately listed on invoices</div>
+              </div>
+            </button>
+            <button class="opt-card" onclick="selectBundling('separate')" data-val="separate">
+              <span class="opt-icon">🧾</span>
+              <div class="opt-body">
+                <div class="opt-title">Services invoiced separately</div>
+                <div class="opt-desc">Services appear as distinct line items on customer invoices</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Branch box: digital content -->
+      <div id="branch-digital" class="branch-box hidden">
+        <div class="branch-box-label">What type of content do you sell?</div>
+        <div class="options-grid col2">
+          <button class="opt-card" onclick="selectContentType('video')" data-val="video">
+            <span class="opt-icon">🎬</span>
+            <div class="opt-body">
+              <div class="opt-title">Video</div>
+              <div class="opt-desc">Movies, courses, tutorials, or other video content</div>
+            </div>
+          </button>
+          <button class="opt-card" onclick="selectContentType('audio')" data-val="audio">
+            <span class="opt-icon">🎵</span>
+            <div class="opt-body">
+              <div class="opt-title">Music &amp; audio</div>
+              <div class="opt-desc">Music, podcasts, audiobooks, or audio recordings</div>
+            </div>
+          </button>
+          <button class="opt-card" onclick="selectContentType('books')" data-val="books">
+            <span class="opt-icon">📚</span>
+            <div class="opt-body">
+              <div class="opt-title">Books &amp; written content</div>
+              <div class="opt-desc">Ebooks, articles, newsletters, or digital publications</div>
+            </div>
+          </button>
+          <button class="opt-card" onclick="selectContentType('mixed')" data-val="mixed">
+            <span class="opt-icon">📱</span>
+            <div class="opt-body">
+              <div class="opt-title">Mixed or other</div>
+              <div class="opt-desc">Multiple content types or formats not listed above</div>
+            </div>
+          </button>
+        </div>
+        <div id="branch-content-access" class="branch-inner hidden">
+          <div class="branch-box-label">How do customers access your content?</div>
+          <div class="options-grid col2">
+            <button class="opt-card" onclick="selectContentAccess('streaming')" data-val="streaming">
+              <span class="opt-icon">▶️</span>
+              <div class="opt-body">
+                <div class="opt-title">Stream or subscribe</div>
+                <div class="opt-desc">Customers access content online. They do not keep a permanent copy.</div>
+              </div>
+            </button>
+            <button class="opt-card" onclick="selectContentAccess('download')" data-val="download">
+              <span class="opt-icon">⬇️</span>
+              <div class="opt-body">
+                <div class="opt-title">Download and keep</div>
+                <div class="opt-desc">Customers download the content and own it permanently after purchase</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-nav">
+        <div></div>
+        <button class="btn-next" id="q1-next" disabled onclick="goToQ2()">Next →</button>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div id="q2" class="q-card fade-in hidden">
+      <div class="q-label">Question 2 of 4</div>
+      <div class="q-title">Who are your primary customers?</div>
+      <div class="q-subtitle">Some states treat B2B and B2C sales differently. This affects your tax exposure.</div>
+      <div class="options-grid col2">
+        <button class="opt-card" onclick="selectQ2('b2b')" data-val="b2b">
+          <span class="opt-icon">🏢</span>
+          <div class="opt-body">
+            <div class="opt-title">Businesses (B2B)</div>
+            <div class="opt-desc">Selling to companies, teams, or business accounts</div>
+          </div>
+        </button>
+        <button class="opt-card" onclick="selectQ2('b2c')" data-val="b2c">
+          <span class="opt-icon">👤</span>
+          <div class="opt-body">
+            <div class="opt-title">Consumers (B2C)</div>
+            <div class="opt-desc">Selling to individuals for personal use</div>
+          </div>
+        </button>
+        <button class="opt-card" onclick="selectQ2('both')" data-val="both">
+          <span class="opt-icon">🔀</span>
+          <div class="opt-body">
+            <div class="opt-title">Both B2B and B2C</div>
+            <div class="opt-desc">Mixed customer base across business and consumer segments</div>
+          </div>
+        </button>
+        <button class="opt-card" onclick="selectQ2('unknown')" data-val="unknown">
+          <span class="opt-icon">❓</span>
+          <div class="opt-body">
+            <div class="opt-title">Not Sure</div>
+            <div class="opt-desc">Show me the full picture and I'll determine which applies</div>
+          </div>
+        </button>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back" onclick="goToQ1()">← Back</button>
+        <button class="btn-next" id="q2-next" disabled onclick="goToQ3()">Next →</button>
+      </div>
+    </div>
+
+    <!-- Q3: Physical Nexus -->
+    <div id="q3" class="q-card fade-in hidden">
+      <div class="q-label">Question 3 of 4</div>
+      <div class="q-title">Do you have physical nexus in any states?</div>
+      <div class="q-subtitle">Physical nexus is established when a business has a tangible presence in a specific state, including an office, employees or contractors operating within the state, or activities like attending tradeshows or providing in-person services.</div>
+      <div class="options-grid col2">
+        <button class="opt-card" onclick="selectQ3('no')" data-val="no">
+          <span class="opt-icon">💻</span>
+          <div class="opt-body">
+            <div class="opt-title">No physical presence</div>
+            <div class="opt-desc">Fully remote and online — no offices, employees, contractors, or in-person activities in any state</div>
+          </div>
+        </button>
+        <button class="opt-card" onclick="selectQ3('yes')" data-val="yes">
+          <span class="opt-icon">🏛️</span>
+          <div class="opt-body">
+            <div class="opt-title">Yes, we have physical nexus</div>
+            <div class="opt-desc">Office, employees, contractors, tradeshow activity, or in-person services in one or more states</div>
+          </div>
+        </button>
+      </div>
+      <div id="physical-state-selector" class="hidden" style="margin-top: 20px;">
+        <div class="q-subtitle" style="margin-bottom: 12px;">Which states? Select all that apply.</div>
+        <input class="state-search" type="text" placeholder="Search states…" oninput="filterPhysicalStates(this.value)" />
+        <div class="state-controls">
+          <button class="btn-link" onclick="selectAllPhysicalStates()">Select all 50 states</button>
+          <button class="btn-link" onclick="clearAllPhysicalStates()">Clear all</button>
+          <span style="color: var(--tc-gray-text); font-size: 13px; margin-left: auto;" id="physical-state-count-label">0 selected</span>
+        </div>
+        <div class="state-grid" id="physical-state-grid"></div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back" onclick="goToQ2()">← Back</button>
+        <button class="btn-next" id="q3-next" disabled onclick="goToQ4()">Next →</button>
+      </div>
+    </div>
+
+    <!-- Q4: Customer States -->
+    <div id="q4" class="q-card fade-in hidden">
+      <div class="q-label">Question 4 of 4</div>
+      <div class="q-title">What states are you currently selling in?</div>
+      <div class="q-subtitle">Select all states where you have customers or generate revenue.</div>
+      <input class="state-search" type="text" placeholder="Search states…" oninput="filterStates(this.value)" />
+      <div class="state-controls">
+        <button class="btn-link" onclick="selectAllStates()">Select all 50 states</button>
+        <button class="btn-link" onclick="clearAllStates()">Clear all</button>
+        <span style="color: var(--tc-gray-text); font-size: 13px; margin-left: auto;" id="state-count-label">0 selected</span>
+      </div>
+      <div class="state-grid" id="state-grid"></div>
+      <div class="q-nav">
+        <button class="btn-back" onclick="goToQ3()">← Back</button>
+        <button class="btn-next" id="q4-next" disabled onclick="showResults()">See My Results →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="screen-results" class="hidden fade-in">
+    <div class="results-header">
+      <h2>Your Tax Exposure Report</h2>
+      <p id="results-subtitle"></p>
+    </div>
+    <div id="tic-container"></div>
+    <div class="results-summary-bar" id="summary-bar"></div>
+    <div id="results-body"></div>
+    <div class="cta-box">
+      <h3>Not sure what to do with these results?</h3>
+      <p>Book a call with our sales team to learn how TaxCloud automates sales tax registration, filing, and remittance across every state.</p>
+      <a class="btn-cta" href="https://taxcloud.com/talk-to-sales/" target="_blank">Talk to Sales →</a>
+    </div>
+    <div class="cta-disclaimer">
+      ⚠️ <strong>Disclaimer:</strong> This tool provides general educational guidance only and does not constitute legal or tax advice. Sales tax law is complex and changes frequently. State treatment may vary based on your specific product configuration, contract structure, and customer type. Consult a qualified tax professional for guidance specific to your business.
+    </div>
+    <button class="restart-btn" onclick="restart()">← Start over</button>
+  </div>
+
+</div>
+
+<script>
+  // ─── State Data ───────────────────────────────────────────────────────────
+  // Status: 'taxable' | 'conditional' | 'exempt' | 'notax'
+  // Rationale is adjusted by product type in buildResults()
+  const STATES = [
+    { code:'AL', name:'Alabama',         saas:'taxable',     download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://www.revenue.alabama.gov/ador-issues-guidance-on-taxability-of-computer-software/', saasNote:'Alabama taxes SaaS as a taxable computer software service.',                           downloadNote:'Downloaded software is taxable in Alabama.',                  digitalNote:'Digital products are taxable in Alabama.',                      servicesNote:'Most professional services are not taxable in Alabama.' },
+    { code:'AK', name:'Alaska',           saas:'notax',       download:'notax',       digital:'notax',       services:'notax',      source:'https://tax.alaska.gov/programs/index.aspx',                                                  saasNote:'Alaska has no statewide sales tax.',                                                    downloadNote:'Alaska has no statewide sales tax.',                          digitalNote:'Alaska has no statewide sales tax.',                            servicesNote:'Alaska has no statewide sales tax.' },
+    { code:'AZ', name:'Arizona',          saas:'conditional', download:'taxable',     digital:'conditional', services:'exempt',     source:'https://azdor.gov/model-city-tax-code/articles-and-sections/computer-hardware-software-and-data-services', saasNote:'Arizona taxes SaaS for B2C transactions; B2B treatment depends on use and contract.',  downloadNote:'Downloaded software is generally taxable in Arizona.',        digitalNote:'Taxability of digital content in Arizona is unsettled.',        servicesNote:'Most professional services are not taxable in Arizona.' },
+    { code:'AR', name:'Arkansas',         saas:'exempt',      download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://www.law.cornell.edu/regulations/arkansas/006-05-06-Ark-Code-R-SS-25',               saasNote:'Arkansas does not tax SaaS. Electronically delivered software is exempt under GR-25; only software on physical media is taxable.',                        downloadNote:'Downloaded software is taxable in Arkansas.',                  digitalNote:'Digital products are taxable in Arkansas.',                     servicesNote:'Most professional services are not taxable in Arkansas.' },
+    { code:'CA', name:'California',       saas:'exempt',      download:'taxable',     digital:'exempt',      services:'exempt',     source:'https://cdtfa.ca.gov/formspubs/pub109/nontaxable-sales.htm',                                 saasNote:'California does not currently tax SaaS. Access to hosted software without a download is exempt. Note: California enacted SB-122 in 2026, extending sales tax to SaaS starting January 1, 2027.', downloadNote:'Prewritten downloaded software is taxable in California.',     digitalNote:'Most digital content is not taxable in California.',            servicesNote:'Professional services are generally not taxable in California.' },
+    { code:'CO', name:'Colorado',         saas:'exempt',      download:'taxable',     digital:'exempt',      services:'exempt',     source:'https://leg.colorado.gov/bills/hb26-1223',                                                    saasNote:'Colorado does not currently tax SaaS. HB 26-1223 (enacted 2026) will extend sales tax to SaaS starting January 1, 2027.', downloadNote:'Downloaded software is taxable in Colorado.',                  digitalNote:'Digital content is generally not taxable in Colorado.',         servicesNote:'Professional services are not taxable in Colorado.' },
+    { code:'CT', name:'Connecticut',      saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://portal.ct.gov/-/media/drs/publications/pubssn/2019/sn-2019(8).pdf',                 saasNote:'Connecticut taxes SaaS as a computer and data processing service at 1%.',             downloadNote:'Downloaded software is taxable in Connecticut.',               digitalNote:'Digital products are taxable in Connecticut.',                  servicesNote:'Many services are taxable in Connecticut; consult a professional.' },
+    { code:'DE', name:'Delaware',         saas:'notax',       download:'notax',       digital:'notax',       services:'notax',      source:'https://revenue.delaware.gov/business-tax-forms/doing-business-in-delaware/step-4-gross-receipts-taxes/', saasNote:'Delaware has no sales tax.',                                                           downloadNote:'Delaware has no sales tax.',                                   digitalNote:'Delaware has no sales tax.',                                    servicesNote:'Delaware has no sales tax.' },
+    { code:'FL', name:'Florida',          saas:'exempt',      download:'taxable',     digital:'conditional', services:'exempt',     source:'https://floridarevenue.com/TaxLaw/Documents/22A-022.pdf',                                     saasNote:'Florida does not currently tax SaaS. Only software delivered to a Florida device is taxable.', downloadNote:'Downloaded software is taxable in Florida.',             digitalNote:'Digital content taxability in Florida is evolving — check current rules.', servicesNote:'Most professional services are not taxable in Florida.' },
+    { code:'GA', name:'Georgia',          saas:'exempt',      download:'taxable',     digital:'exempt',      services:'exempt',     source:'https://www.law.cornell.edu/regulations/georgia/Ga-Comp-R-Regs-R-560-12-2-.118',            saasNote:'Georgia does not tax SaaS. Cloud-based software access is generally exempt.',           downloadNote:'Downloaded software is taxable in Georgia.',                   digitalNote:'Digital content is generally not taxable in Georgia.',          servicesNote:'Professional services are not taxable in Georgia.' },
+    { code:'HI', name:'Hawaii',           saas:'taxable',     download:'taxable',     digital:'taxable',     services:'taxable',    source:'https://tax.hawaii.gov/',                                                                      saasNote:'Hawaii taxes nearly all business activity under its General Excise Tax, including SaaS.', downloadNote:'Hawaii taxes downloads under its General Excise Tax.',         digitalNote:'Hawaii taxes digital content under its General Excise Tax.',    servicesNote:'Hawaii taxes nearly all services under its General Excise Tax.' },
+    { code:'ID', name:'Idaho',            saas:'exempt',      download:'taxable',     digital:'exempt',      services:'exempt',     source:'https://www.law.cornell.edu/regulations/idaho/IDAPA-35.01.02.027',                           saasNote:'Idaho does not tax SaaS.',                                                             downloadNote:'Downloaded software is taxable in Idaho.',                     digitalNote:'Digital content is generally not taxable in Idaho.',            servicesNote:'Professional services are not taxable in Idaho.' },
+    { code:'IL', name:'Illinois',         saas:'exempt',      download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://tax.illinois.gov/questionsandanswers/answer.145.html',                              saasNote:'Illinois does not tax SaaS, but taxes downloaded software as tangible personal property.', downloadNote:'Downloaded software is taxable in Illinois.',                 digitalNote:'Illinois taxes digital products and streaming services.',        servicesNote:'Professional services are not taxable in Illinois.' },
+    { code:'IN', name:'Indiana',          saas:'exempt',      download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://www.in.gov/dor/files/sib08.pdf',                                                      saasNote:'Indiana does not tax SaaS. Remotely accessed software is generally exempt per Bulletin #8 (updated 2023). Note: if SaaS is bundled with taxable items and the taxable portion exceeds 10% of the total, the full charge may become taxable.', downloadNote:'Downloaded software is taxable in Indiana.',            digitalNote:'Digital products are taxable in Indiana.',                      servicesNote:'Professional services are not taxable in Indiana.' },
+    { code:'IA', name:'Iowa',             saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://revenue.iowa.gov/taxation-digital-products',                                         saasNote:'Iowa taxes SaaS as a specified digital product or computer service.',                 downloadNote:'Downloaded software is taxable in Iowa.',                      digitalNote:'Digital products are taxable in Iowa.',                         servicesNote:'Iowa taxes some business services; consult a professional.' },
+    { code:'KS', name:'Kansas',           saas:'taxable',     download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://www.ksrevenue.gov/pdf/edu71r.pdf',                                                    saasNote:'Kansas taxes SaaS as a digital service.',                                              downloadNote:'Downloaded software is taxable in Kansas.',                    digitalNote:'Digital products are taxable in Kansas.',                       servicesNote:'Most professional services are not taxable in Kansas.' },
+    { code:'KY', name:'Kentucky',         saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://apps.legislature.ky.gov/law/statutes/chapter.aspx?id=37663',                        saasNote:'Kentucky taxes SaaS as prewritten computer software, regardless of delivery method.',  downloadNote:'Downloaded software is taxable in Kentucky.',                  digitalNote:'Digital products are taxable in Kentucky.',                     servicesNote:'Kentucky taxes some professional services — confirm your category.' },
+    { code:'LA', name:'Louisiana',        saas:'taxable',     download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://revenue.louisiana.gov/tax-policy/policies/digital_products/',                        saasNote:'Louisiana taxes SaaS as a digital product.',                                           downloadNote:'Downloaded software is taxable in Louisiana.',                 digitalNote:'Digital products are taxable in Louisiana.',                    servicesNote:'Most professional services are not taxable in Louisiana.' },
+    { code:'ME', name:'Maine',            saas:'conditional', download:'taxable',     digital:'taxable',     services:'conditional',source:'https://www.maine.gov/revenue/sites/maine.gov.revenue/files/inline-files/GIB%20115_FINAL_2025_10_17_0.pdf', saasNote:'Maine has historically exempted SaaS, but is expanding its digital goods tax base in 2026. Treatment is in flux — monitor for changes.',                downNote:'Downloaded software is taxable in Maine.',                         digitalNote:'Digital products are taxable in Maine.',                        servicesNote:'Maine taxes many services — confirm your specific service type.' },
+    { code:'MD', name:'Maryland',         saas:'exempt',      download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://marylandtaxes.gov/forms/Business_Tax_Tips/bustip29.pdf',                             saasNote:'Maryland does not tax SaaS, though it imposes a separate Digital Advertising Tax.',   downloadNote:'Downloaded software is taxable in Maryland.',                  digitalNote:'Digital products are taxable in Maryland.',                     servicesNote:'Professional services are generally not taxable in Maryland.' },
+    { code:'MA', name:'Massachusetts',    saas:'taxable',     download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://www.mass.gov/technical-information-release/tir-05-15-transfers-of-prewritten-computer-software', saasNote:'Massachusetts taxes SaaS when it involves the right to use prewritten software.',       downloadNote:'Downloaded software is taxable in Massachusetts.',             digitalNote:'Digital products are taxable in Massachusetts.',                servicesNote:'Professional services are generally not taxable in Massachusetts.' },
+    { code:'MI', name:'Michigan',         saas:'exempt',      download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://www.michigan.gov/taxes/rep-legal/rab/2023-revenue-administrative-bulletins/revenue-administrative-bulletin-2023-10', saasNote:'Michigan does not tax SaaS. Cloud-based access to software is generally not taxable.',  downloadNote:'Downloaded software is taxable in Michigan.',                  digitalNote:'Digital products are taxable in Michigan.',                     servicesNote:'Professional services are not taxable in Michigan.' },
+    { code:'MN', name:'Minnesota',        saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://www.revenue.state.mn.us/guide/computer-software-and-digital-products',               saasNote:'Minnesota taxes SaaS as a digital product.',                                          downloadNote:'Downloaded software is taxable in Minnesota.',                 digitalNote:'Digital products are taxable in Minnesota.',                    servicesNote:'Minnesota taxes some business services; check your category.' },
+    { code:'MS', name:'Mississippi',      saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://www.dor.ms.gov/2023-legislation',                                                      saasNote:'Mississippi taxes SaaS as a computer software service.',                              downloadNote:'Downloaded software is taxable in Mississippi.',               digitalNote:'Digital products are taxable in Mississippi.',                  servicesNote:'Mississippi taxes some services; confirm your specific services.' },
+    { code:'MO', name:'Missouri',         saas:'exempt',      download:'taxable',     digital:'exempt',      services:'exempt',     source:'https://dor.mo.gov/rulings/show/8250',                                                         saasNote:'Missouri does not tax SaaS.',                                                          downloadNote:'Downloaded software is taxable in Missouri.',                  digitalNote:'Digital content is generally not taxable in Missouri.',         servicesNote:'Professional services are not taxable in Missouri.' },
+    { code:'MT', name:'Montana',          saas:'notax',       download:'notax',       digital:'notax',       services:'notax',      source:'https://revenue.mt.gov/',                                                                      saasNote:'Montana has no sales tax.',                                                            downloadNote:'Montana has no sales tax.',                                    digitalNote:'Montana has no sales tax.',                                     servicesNote:'Montana has no sales tax.' },
+    { code:'NE', name:'Nebraska',         saas:'taxable',     download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://revenue.nebraska.gov/sites/default/files/doc/legal/regs/1-088.pdf',                   saasNote:'Nebraska taxes SaaS as a computer software service.',                                  downloadNote:'Downloaded software is taxable in Nebraska.',                  digitalNote:'Digital products are taxable in Nebraska.',                     servicesNote:'Professional services are generally not taxable in Nebraska.' },
+    { code:'NV', name:'Nevada',           saas:'conditional', download:'taxable',     digital:'conditional', services:'exempt',     source:'https://www.leg.state.nv.us/nac/nac-372.html',                                               saasNote:'Nevada\'s treatment of SaaS is evolving. Some services may be taxable — review with a professional.',downloadNote:'Downloaded software is taxable in Nevada.',            digitalNote:'Digital content taxability is unsettled in Nevada.',            servicesNote:'Professional services are not taxable in Nevada.' },
+    { code:'NH', name:'New Hampshire',    saas:'notax',       download:'notax',       digital:'notax',       services:'notax',      source:'https://www.revenue.nh.gov/',                                                                  saasNote:'New Hampshire has no sales tax.',                                                       downloadNote:'New Hampshire has no sales tax.',                              digitalNote:'New Hampshire has no sales tax.',                               servicesNote:'New Hampshire has no sales tax.' },
+    { code:'NJ', name:'New Jersey',       saas:'exempt',      download:'taxable',     digital:'taxable',     services:'conditional',source:'https://nj.gov/treasury/taxation/pdf/pubs/tb/tb72.pdf',                                       saasNote:'New Jersey does not tax SaaS when no software is transferred to the customer.',       downloadNote:'Downloaded software is taxable in New Jersey.',                digitalNote:'Digital products are taxable in New Jersey.',                   servicesNote:'New Jersey taxes some information services; check your category.' },
+    { code:'NM', name:'New Mexico',       saas:'taxable',     download:'taxable',     digital:'taxable',     services:'taxable',    source:'https://www.tax.newmexico.gov/businesses/gross-receipts-overview/',                           saasNote:'New Mexico taxes SaaS under its Gross Receipts Tax, which applies broadly.',           downloadNote:'Downloaded software is taxable in New Mexico.',                digitalNote:'Digital products are taxable in New Mexico.',                   servicesNote:'New Mexico\'s Gross Receipts Tax applies broadly to most services.' },
+    { code:'NY', name:'New York',         saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://www.tax.ny.gov/pubs_and_bulls/tg_bulletins/st/computer_software.htm',                saasNote:'New York taxes SaaS as a taxable service when it involves the use of prewritten software.', downloadNote:'Downloaded software is taxable in New York.',                 digitalNote:'Digital products are taxable in New York.',                     servicesNote:'New York taxes some business services; confirm your service type.' },
+    { code:'NC', name:'North Carolina',   saas:'exempt',      download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://www.ncdor.gov/taxes-forms/sales-and-use-tax/sales-and-use-tax-bulletins',             saasNote:'North Carolina does not tax SaaS. NCDOR Bulletin 19-3 exempts remotely accessed software delivered over a network without downloading. Note: SaaS bundled with taxable digital content may become taxable on the full charge.',                                      downloadNote:'Downloaded software is taxable in North Carolina.',            digitalNote:'Digital products are taxable in North Carolina.',               servicesNote:'Professional services are not taxable in North Carolina.' },
+    { code:'ND', name:'North Dakota',     saas:'taxable',     download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://www.tax.nd.gov/guidelines',                                                           saasNote:'North Dakota taxes SaaS as a digital automated service.',                              downloadNote:'Downloaded software is taxable in North Dakota.',              digitalNote:'Digital products are taxable in North Dakota.',                 servicesNote:'Professional services are not taxable in North Dakota.' },
+    { code:'OH', name:'Ohio',             saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://codes.ohio.gov/ohio-administrative-code/rule-5703-9-46',                             saasNote:'Ohio taxes SaaS as an electronic information service or computer service.',            downloadNote:'Downloaded software is taxable in Ohio.',                      digitalNote:'Digital products are taxable in Ohio.',                         servicesNote:'Ohio taxes some business services; confirm your category.' },
+    { code:'OK', name:'Oklahoma',         saas:'exempt',      download:'taxable',     digital:'exempt',      services:'exempt',     source:'https://oklahoma.gov/content/dam/ok/en/tax/documents/resources/rules-and-policies/agency-rules/2024/Chapter_65_Sales_and_Use_Tax_2024.pdf', saasNote:'Oklahoma does not tax SaaS.',                                                          downloadNote:'Downloaded software is taxable in Oklahoma.',                  digitalNote:'Digital content is generally not taxable in Oklahoma.',         servicesNote:'Professional services are not taxable in Oklahoma.' },
+    { code:'OR', name:'Oregon',           saas:'notax',       download:'notax',       digital:'notax',       services:'notax',      source:'https://www.oregon.gov/dor/programs/businesses/pages/sales-tax.aspx',                        saasNote:'Oregon has no sales tax.',                                                             downloadNote:'Oregon has no sales tax.',                                     digitalNote:'Oregon has no sales tax.',                                      servicesNote:'Oregon has no sales tax.' },
+    { code:'PA', name:'Pennsylvania',     saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://www.pa.gov/agencies/revenue/resources/tax-types-and-information/sales-use-and-hotel-occupancy-tax/canned-computer-software-digital-goods', saasNote:'Pennsylvania taxes SaaS as a taxable computer service.',                               downloadNote:'Downloaded software is taxable in Pennsylvania.',              digitalNote:'Digital products are taxable in Pennsylvania.',                 servicesNote:'Pennsylvania taxes some business services; confirm your type.' },
+    { code:'RI', name:'Rhode Island',     saas:'exempt',      download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://rules.sos.ri.gov/regulations/Part/280-20-70-46',                                      saasNote:'Rhode Island does not tax SaaS. Regulation 280-RICR-20-70-46 explicitly exempts hosted software accessed remotely without downloading. Downloaded prewritten software remains taxable.',                              downloadNote:'Downloaded software is taxable in Rhode Island.',              digitalNote:'Digital products are taxable in Rhode Island.',                 servicesNote:'Professional services are not taxable in Rhode Island.' },
+    { code:'SC', name:'South Carolina',   saas:'taxable',     download:'taxable',     digital:'conditional', services:'exempt',     source:'https://dor.sc.gov/sales-use-tax-online-software-subscription-service-and-training',         saasNote:'South Carolina taxes SaaS. Revenue Ruling #20-1 confirmed that online software subscription services are subject to sales and use tax as a taxable communications service.',                                                    downloadNote:'Downloaded software is taxable in South Carolina.',            digitalNote:'Digital content taxability is evolving in South Carolina.',     servicesNote:'Professional services are not taxable in South Carolina.' },
+    { code:'SD', name:'South Dakota',     saas:'taxable',     download:'taxable',     digital:'taxable',     services:'taxable',    source:'https://dor.sd.gov/businesses/taxes/sales-use-tax/',                                         saasNote:'South Dakota taxes SaaS as a digital product.',                                        downloadNote:'Downloaded software is taxable in South Dakota.',              digitalNote:'Digital products are taxable in South Dakota.',                 servicesNote:'South Dakota broadly taxes services, including most professional services.' },
+    { code:'TN', name:'Tennessee',        saas:'taxable',     download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://revenue.support.tn.gov/hc/en-us/articles/360057266092-RAS-1-Remotely-Accessed-Software-Overview', saasNote:'Tennessee taxes SaaS as a specified digital product.',                                 downloadNote:'Downloaded software is taxable in Tennessee.',                 digitalNote:'Digital products are taxable in Tennessee.',                    servicesNote:'Professional services are generally not taxable in Tennessee.' },
+    { code:'TX', name:'Texas',            saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://comptroller.texas.gov/taxes/publications/94-127.php',                                saasNote:'Texas taxes SaaS as a data processing service — 80% of the charge is taxable.',       downloadNote:'Downloaded software is taxable in Texas.',                     digitalNote:'Digital products are taxable in Texas.',                        servicesNote:'Texas taxes some services including data processing; confirm your type.' },
+    { code:'UT', name:'Utah',             saas:'taxable',     download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://tax.utah.gov/forms-pubs/pub-64/',                                                      saasNote:'Utah taxes SaaS as a specified digital product.',                                      downloadNote:'Downloaded software is taxable in Utah.',                      digitalNote:'Digital products are taxable in Utah.',                         servicesNote:'Professional services are not taxable in Utah.' },
+    { code:'VT', name:'Vermont',          saas:'exempt',      download:'taxable',     digital:'taxable',     services:'conditional',source:'https://tax.vermont.gov/business-and-corp/sales-and-use-tax/prewritten-computer-software',    saasNote:'Vermont does not tax SaaS.',                                                          downloadNote:'Downloaded software is taxable in Vermont.',                   digitalNote:'Digital products are taxable in Vermont.',                      servicesNote:'Vermont taxes some services; confirm your specific service.' },
+    { code:'VA', name:'Virginia',         saas:'exempt',      download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://www.tax.virginia.gov/laws-rules-decisions/rulings-tax-commissioner/25-98',           saasNote:'Virginia does not tax SaaS.',                                                          downloadNote:'Downloaded software is taxable in Virginia.',                  digitalNote:'Digital products are taxable in Virginia.',                     servicesNote:'Professional services are not taxable in Virginia.' },
+    { code:'WA', name:'Washington',       saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://dor.wa.gov/forms-publications/publications-subject/tax-topics/information-technology-products-and-services', saasNote:'Washington taxes SaaS as a digital automated service.',                               downloadNote:'Downloaded software is taxable in Washington.',                digitalNote:'Digital products are taxable in Washington.',                   servicesNote:'Washington taxes some business services; confirm your category.' },
+    { code:'WV', name:'West Virginia',    saas:'taxable',     download:'taxable',     digital:'taxable',     services:'conditional',source:'https://code.wvlegislature.gov/11-15-9h/',                                                    saasNote:'West Virginia taxes SaaS as a digital product.',                                      downloadNote:'Downloaded software is taxable in West Virginia.',             digitalNote:'Digital products are taxable in West Virginia.',                servicesNote:'West Virginia taxes some services; confirm your specific type.' },
+    { code:'WI', name:'Wisconsin',        saas:'exempt',      download:'taxable',     digital:'taxable',     services:'exempt',     source:'https://www.revenue.wi.gov/Pages/FAQS/pcs-computerc.aspx',                                   saasNote:'Wisconsin does not tax SaaS when no software is transferred to the customer.',         downloadNote:'Downloaded software is taxable in Wisconsin.',                 digitalNote:'Digital products are taxable in Wisconsin.',                    servicesNote:'Professional services are not taxable in Wisconsin.' },
+    { code:'WY', name:'Wyoming',          saas:'exempt',      download:'taxable',     digital:'conditional', services:'exempt',     source:'https://revenue.wyo.gov/rules-and-regulations',                                               saasNote:'Wyoming does not tax SaaS.',                                                           downloadNote:'Downloaded software is taxable in Wyoming.',                   digitalNote:'Digital content taxability is unsettled in Wyoming.',           servicesNote:'Professional services are not taxable in Wyoming.' },
+  ];
+
+  // ─── State ────────────────────────────────────────────────────────────────
+  let answers = { productType: null, softwareType: null, bundled: null, contentType: null, contentAccess: null, customerType: null, physicalPresence: null, physicalStates: new Set(), states: new Set() };
+
+  // ─── Screens ─────────────────────────────────────────────────────────────
+  function show(id) {
+    ['screen-intro','screen-quiz','screen-results'].forEach(s => {
+      document.getElementById(s).classList.toggle('hidden', s !== id);
+    });
+  }
+  function showQ(n) {
+    ['q1','q2','q3','q4'].forEach((q,i) => {
+      document.getElementById(q).classList.toggle('hidden', i+1 !== n);
+    });
+    const pct = Math.round(((n-1)/4)*100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = `Question ${n} of 4`;
+    document.getElementById('progress-pct').textContent = pct + '%';
+  }
+
+  function startQuiz() {
+    show('screen-quiz');
+    showQ(1);
+    buildStateGrid();
+    buildPhysicalStateGrid();
+  }
+
+  // ─── TIC Code Catalog ────────────────────────────────────────────────────
+  const TIC_CODES = {
+    saas_prewritten_none:         { code:'30070', label:'Remotely Accessed Prewritten Software',            note:'Cloud-based software accessed remotely without downloading. The core TIC for SaaS products.' },
+    saas_prewritten_bundled:      { code:'30070', label:'Remotely Accessed Prewritten Software',            note:'<span class="tic-warn">Bundling alert:</span> When support or onboarding is not separately listed on invoices, states like New York and Texas may tax the entire transaction. Itemizing service charges on invoices is the safest approach.' },
+    saas_prewritten_separate:     { code:'30070', label:'Remotely Accessed Prewritten Software',            note:'Separately stating service charges is best practice — it protects your position in states that would otherwise tax the full bundled amount at the software rate.' },
+    saas_custom_none:             { code:'30025', label:'Custom Software — Remote Access',                  note:'Software designed to each customer\'s specifications, delivered via remote access. Custom software is often exempt where prewritten SaaS is taxable — including New York, Texas, and Massachusetts.' },
+    saas_custom_bundled:          { code:'30025', label:'Custom Software — Remote Access',                  note:'Custom software is often exempt where prewritten SaaS is taxable. <span class="tic-warn">Bundled services (not separately invoiced) can complicate this in some states.</span>' },
+    saas_custom_separate:         { code:'30025', label:'Custom Software — Remote Access',                  note:'Strong position — custom software treatment plus separately stated services gives the clearest path to exemptions where available.' },
+    download_prewritten_none:     { code:'30050', label:'Downloaded Prewritten Software',                   note:'Standard off-the-shelf software delivered by download. Taxable in most states that have a sales tax.' },
+    download_prewritten_bundled:  { code:'30050', label:'Downloaded Prewritten Software',                   note:'<span class="tic-warn">Bundling alert:</span> Services not listed separately on invoices may make the entire transaction taxable at the software rate, even where services alone would be exempt.' },
+    download_prewritten_separate: { code:'30050', label:'Downloaded Prewritten Software',                   note:'Downloaded prewritten software with separately invoiced services. Separating charges protects you in states that distinguish software and service revenue.' },
+    download_custom_none:         { code:'30025', label:'Custom Software — Download',                       note:'Software built to each client\'s specifications, delivered by download. Often taxed more favorably than prewritten in states like New York and Texas.' },
+    download_custom_bundled:      { code:'30025', label:'Custom Software — Download',                       note:'Custom software is frequently exempt where prewritten software is taxable, but bundled services (not separately invoiced) can blur that line in some states.' },
+    download_custom_separate:     { code:'30025', label:'Custom Software — Download',                       note:'Custom downloaded software with separately stated services. Strong position for claiming both custom software treatment and service exemptions.' },
+    digital_video_streaming:      { code:'31060', label:'Streaming Video',                                  note:'Video content delivered via streaming or subscription. Taxability varies significantly by state and is expanding — roughly 30 states now tax this category.' },
+    digital_audio_streaming:      { code:'31090', label:'Streaming Audio',                                  note:'Audio content (music, podcasts, audiobooks) delivered via streaming or subscription. Some states treat streaming audio differently from streaming video.' },
+    digital_books_streaming:      { code:'31120', label:'Electronically Accessed Digital Books',            note:'Digital books or written content accessed via subscription. Tax treatment for digital publications varies widely across states.' },
+    digital_mixed_streaming:      { code:'31060', label:'Streaming Digital Content (Mixed)',                note:'Mixed digital content accessed via subscription. Using the streaming video TIC (31060) as the primary code — you may need separate TICs per content category in your tax system.' },
+    digital_video_download:       { code:'31040', label:'Digital Video — Permanent Download',               note:'Video content sold for permanent ownership by download. Treatment often mirrors physical media — a growing number of states tax this category.' },
+    digital_audio_download:       { code:'31070', label:'Digital Audio — Permanent Download',               note:'Music or audio sold for permanent ownership by download. Many states treat digital audio like physical CDs or DVDs.' },
+    digital_books_download:       { code:'31100', label:'Digital Books — Permanent Download',               note:'Ebooks or digital publications sold for permanent ownership. Tax treatment varies widely — some states follow physical book exemptions.' },
+    digital_mixed_download:       { code:'31040', label:'Digital Content — Permanent Download (Mixed)',     note:'Mixed digital content sold for permanent ownership. Using the video download TIC (31040) as the primary code — consider separate TICs per content category.' },
+    services:                     { code:'1',     label:'General Service',                                  note:'Professional and consulting services are generally less broadly taxable than software — but Hawaii, South Dakota, New Mexico, and a few others tax most services. Physical presence rules apply regardless of product type.' },
+  };
+
+  function getTICKey() {
+    const pt = answers.productType;
+    if (pt === 'saas' || pt === 'download') return `${pt}_${answers.softwareType || 'prewritten'}_${answers.bundled || 'none'}`;
+    if (pt === 'digital') return `digital_${answers.contentType || 'mixed'}_${answers.contentAccess || 'streaming'}`;
+    return 'services';
+  }
+
+  // ─── Q1 ───────────────────────────────────────────────────────────────────
+  function selectQ1(val) {
+    answers.productType = val;
+    answers.softwareType = null;
+    answers.bundled = null;
+    answers.contentType = null;
+    answers.contentAccess = null;
+    document.querySelectorAll('#q1 > .options-grid > .opt-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.val === val);
+    });
+    // Reset and hide all branch boxes
+    document.getElementById('branch-software').classList.add('hidden');
+    document.getElementById('branch-bundling').classList.add('hidden');
+    document.getElementById('branch-digital').classList.add('hidden');
+    document.getElementById('branch-content-access').classList.add('hidden');
+    document.querySelectorAll('#branch-software .opt-card, #branch-digital .opt-card').forEach(c => c.classList.remove('selected'));
+    // Show relevant branch
+    if (val === 'saas' || val === 'download') {
+      document.getElementById('branch-software').classList.remove('hidden');
+    } else if (val === 'digital') {
+      document.getElementById('branch-digital').classList.remove('hidden');
+    }
+    checkQ1Complete();
+  }
+
+  function selectSoftwareType(val) {
+    answers.softwareType = val;
+    document.querySelectorAll('#branch-software > .options-grid > .opt-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.val === val);
+    });
+    document.getElementById('branch-bundling').classList.remove('hidden');
+    checkQ1Complete();
+  }
+
+  function selectBundling(val) {
+    answers.bundled = val;
+    document.querySelectorAll('#branch-bundling .opt-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.val === val);
+    });
+    checkQ1Complete();
+  }
+
+  function selectContentType(val) {
+    answers.contentType = val;
+    document.querySelectorAll('#branch-digital > .options-grid > .opt-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.val === val);
+    });
+    document.getElementById('branch-content-access').classList.remove('hidden');
+    checkQ1Complete();
+  }
+
+  function selectContentAccess(val) {
+    answers.contentAccess = val;
+    document.querySelectorAll('#branch-content-access .opt-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.val === val);
+    });
+    checkQ1Complete();
+  }
+
+  function checkQ1Complete() {
+    const pt = answers.productType;
+    let ready = false;
+    if (pt === 'saas' || pt === 'download') ready = answers.softwareType !== null && answers.bundled !== null;
+    else if (pt === 'digital') ready = answers.contentType !== null && answers.contentAccess !== null;
+    else if (pt === 'services') ready = true;
+    document.getElementById('q1-next').disabled = !ready;
+  }
+
+  function goToQ1() { showQ(1); }
+  function goToQ2() { showQ(2); }
+
+  // ─── Q2 ───────────────────────────────────────────────────────────────────
+  function selectQ2(val) {
+    answers.customerType = val;
+    document.querySelectorAll('#q2 .opt-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.val === val);
+    });
+    document.getElementById('q2-next').disabled = false;
+  }
+  function goToQ3() { showQ(3); }
+
+  // ─── Q3 — Physical Nexus ─────────────────────────────────────────────────
+  function selectQ3(val) {
+    answers.physicalPresence = val;
+    document.querySelectorAll('#q3 .opt-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.val === val);
+    });
+    const selector = document.getElementById('physical-state-selector');
+    if (val === 'yes') {
+      selector.classList.remove('hidden');
+      document.getElementById('q3-next').disabled = answers.physicalStates.size === 0;
+    } else {
+      selector.classList.add('hidden');
+      answers.physicalStates.clear();
+      updatePhysicalStateCountLabel();
+      document.getElementById('q3-next').disabled = false;
+    }
+  }
+  function buildPhysicalStateGrid() {
+    const grid = document.getElementById('physical-state-grid');
+    grid.innerHTML = '';
+    STATES.forEach(s => {
+      const chip = document.createElement('button');
+      chip.className = 'state-chip';
+      chip.dataset.code = s.code;
+      chip.textContent = s.name;
+      chip.onclick = () => togglePhysicalState(s.code, chip);
+      grid.appendChild(chip);
+    });
+  }
+  function togglePhysicalState(code, el) {
+    if (answers.physicalStates.has(code)) {
+      answers.physicalStates.delete(code);
+      el.classList.remove('selected');
+    } else {
+      answers.physicalStates.add(code);
+      el.classList.add('selected');
+    }
+    document.getElementById('q3-next').disabled = answers.physicalStates.size === 0;
+    updatePhysicalStateCountLabel();
+  }
+  function selectAllPhysicalStates() {
+    STATES.forEach(s => answers.physicalStates.add(s.code));
+    document.querySelectorAll('#physical-state-grid .state-chip').forEach(c => c.classList.add('selected'));
+    document.getElementById('q3-next').disabled = false;
+    updatePhysicalStateCountLabel();
+  }
+  function clearAllPhysicalStates() {
+    answers.physicalStates.clear();
+    document.querySelectorAll('#physical-state-grid .state-chip').forEach(c => c.classList.remove('selected'));
+    document.getElementById('q3-next').disabled = answers.physicalPresence === 'yes';
+    updatePhysicalStateCountLabel();
+  }
+  function filterPhysicalStates(q) {
+    const lower = q.toLowerCase();
+    document.querySelectorAll('#physical-state-grid .state-chip').forEach(c => {
+      const match = c.textContent.toLowerCase().includes(lower) || c.dataset.code.toLowerCase().includes(lower);
+      c.classList.toggle('hidden', !match);
+    });
+  }
+  function updatePhysicalStateCountLabel() {
+    document.getElementById('physical-state-count-label').textContent = `${answers.physicalStates.size} selected`;
+  }
+  function goToQ4() { showQ(4); updateStateCountLabel(); }
+
+  // ─── Q4 — Customer States ─────────────────────────────────────────────────
+  function buildStateGrid() {
+    const grid = document.getElementById('state-grid');
+    grid.innerHTML = '';
+    STATES.forEach(s => {
+      const chip = document.createElement('button');
+      chip.className = 'state-chip';
+      chip.dataset.code = s.code;
+      chip.textContent = s.name;
+      chip.onclick = () => toggleState(s.code, chip);
+      grid.appendChild(chip);
+    });
+  }
+  function toggleState(code, el) {
+    if (answers.states.has(code)) {
+      answers.states.delete(code);
+      el.classList.remove('selected');
+    } else {
+      answers.states.add(code);
+      el.classList.add('selected');
+    }
+    document.getElementById('q4-next').disabled = answers.states.size === 0;
+    updateStateCountLabel();
+  }
+  function selectAllStates() {
+    STATES.forEach(s => answers.states.add(s.code));
+    document.querySelectorAll('#state-grid .state-chip').forEach(c => c.classList.add('selected'));
+    document.getElementById('q4-next').disabled = false;
+    updateStateCountLabel();
+  }
+  function clearAllStates() {
+    answers.states.clear();
+    document.querySelectorAll('#state-grid .state-chip').forEach(c => c.classList.remove('selected'));
+    document.getElementById('q4-next').disabled = true;
+    updateStateCountLabel();
+  }
+  function filterStates(q) {
+    const lower = q.toLowerCase();
+    document.querySelectorAll('#state-grid .state-chip').forEach(c => {
+      const match = c.textContent.toLowerCase().includes(lower) || c.dataset.code.toLowerCase().includes(lower);
+      c.classList.toggle('hidden', !match);
+    });
+  }
+  function updateStateCountLabel() {
+    document.getElementById('state-count-label').textContent = `${answers.states.size} selected`;
+  }
+
+  // ─── Results ─────────────────────────────────────────────────────────────
+  const STATUS_LABELS = { taxable:'Likely Taxable', conditional:'Conditional / Uncertain', exempt:'Likely Exempt', notax:'No Sales Tax' };
+  const STATUS_ORDER  = ['taxable','conditional','exempt','notax'];
+  const SECTION_ICONS = { taxable:'⚠️', conditional:'🔶', exempt:'✅', notax:'⬜' };
+
+  function getStatusForState(stateObj) {
+    const pt = answers.productType;
+    let status = stateObj[pt] || stateObj['saas'];
+    const b2bConditional = ['AZ','IN','NV'];
+    if (answers.customerType === 'b2b' && b2bConditional.includes(stateObj.code)) {
+      status = 'conditional';
+    }
+    return status;
+  }
+  function getNoteForState(stateObj) {
+    const pt = answers.productType;
+    const noteKey = pt + 'Note';
+    return stateObj[noteKey] || stateObj['saasNote'];
+  }
+
+  const PRODUCT_LABELS = { saas:'SaaS / Cloud Software', download:'Downloadable Software', digital:'Digital Content', services:'Professional Services' };
+  const CUSTOMER_LABELS = { b2b:'B2B', b2c:'B2C', both:'B2B & B2C', unknown:'general customers' };
+
+  function showResults() {
+    show('screen-results');
+
+    // ── TIC card ──
+    const ticKey = getTICKey();
+    const tic = TIC_CODES[ticKey] || TIC_CODES['services_none'];
+    document.getElementById('tic-container').innerHTML = `
+      <div class="tic-card">
+        <div class="tic-eyebrow">Recommended Taxability Information Code (TIC)</div>
+        <div class="tic-row">
+          <div class="tic-code-num">${tic.code}</div>
+          <div class="tic-code-name">${tic.label}</div>
+        </div>
+        <div class="tic-note">${tic.note}</div>
+      </div>`;
+
+    const pt = answers.productType;
+    const ct = answers.customerType;
+    const physStates = answers.physicalStates;
+
+    // Build physical nexus state objects, sorted
+    const physicalList = [...physStates]
+      .map(code => STATES.find(x => x.code === code))
+      .filter(Boolean)
+      .sort((a,b) => a.name.localeCompare(b.name));
+
+    // For customer states, exclude those already shown in physical nexus section
+    const grouped = { taxable:[], conditional:[], exempt:[], notax:[] };
+    answers.states.forEach(code => {
+      if (physStates.has(code)) return; // already shown in physical nexus
+      const s = STATES.find(x => x.code === code);
+      if (!s) return;
+      const status = getStatusForState(s);
+      grouped[status].push(s);
+    });
+    STATUS_ORDER.forEach(k => grouped[k].sort((a,b) => a.name.localeCompare(b.name)));
+
+    // Subtitle
+    const totalStates = new Set([...answers.states, ...physStates]).size;
+    document.getElementById('results-subtitle').textContent =
+      `Based on your answers: ${PRODUCT_LABELS[pt]} sold to ${CUSTOMER_LABELS[ct]}, across ${totalStates} state${totalStates !== 1 ? 's' : ''}.`;
+
+    // Summary bar
+    const bar = document.getElementById('summary-bar');
+    bar.innerHTML = '';
+    if (physicalList.length > 0) {
+      bar.innerHTML += `
+        <div class="summary-pill physical">
+          <span class="summary-pill-count">${physicalList.length}</span>
+          <span class="summary-pill-label">Physical Nexus</span>
+        </div>`;
+    }
+    const summaryDefs = [
+      { key:'taxable',     label:'Taxable',      cls:'taxable' },
+      { key:'conditional', label:'Uncertain',    cls:'conditional' },
+      { key:'exempt',      label:'Exempt',       cls:'exempt' },
+      { key:'notax',       label:'No Sales Tax', cls:'notax' },
+    ];
+    summaryDefs.forEach(d => {
+      if (grouped[d.key].length === 0) return;
+      bar.innerHTML += `
+        <div class="summary-pill ${d.cls}">
+          <span class="summary-pill-count">${grouped[d.key].length}</span>
+          <span class="summary-pill-label">${d.label}</span>
+        </div>`;
+    });
+
+    // Results body
+    const body = document.getElementById('results-body');
+    body.innerHTML = '';
+
+    // Physical nexus section first
+    if (physicalList.length > 0) {
+      const section = document.createElement('div');
+      section.className = 'results-section';
+      section.innerHTML = `<div class="results-section-title physical">🏛️ Physical Nexus — Registration Required</div>`;
+      physicalList.forEach(s => {
+        const alsoCustomer = answers.states.has(s.code);
+        const note = getNoteForState(s);
+        const extra = alsoCustomer
+          ? ` You also have customers here. ${note}`
+          : 'You have employees, an office, or a warehouse here. Registration is required regardless of sales volume or product type.';
+        section.innerHTML += `
+          <div class="result-row physical">
+            <div class="result-dot physical"></div>
+            <div>
+              <div class="result-state">${s.name}</div>
+              <div class="result-status physical">Physical Nexus — Must Register</div>
+              <div class="result-rationale">${extra}${s.source ? ` <a class="source-link" href="${s.source}" target="_blank">View source ↗</a>` : ''}</div>
+            </div>
+          </div>`;
+      });
+      body.appendChild(section);
+    }
+
+    // Economic nexus sections
+    const sectionDefs = [
+      { key:'taxable',     title:'Likely Taxable — Action Required',       cls:'taxable' },
+      { key:'conditional', title:'Conditional / Uncertain — Review Needed', cls:'conditional' },
+      { key:'exempt',      title:'Likely Exempt — Monitor for Changes',     cls:'exempt' },
+      { key:'notax',       title:'No Sales Tax State',                      cls:'notax' },
+    ];
+    sectionDefs.forEach(def => {
+      const states = grouped[def.key];
+      if (states.length === 0) return;
+      const section = document.createElement('div');
+      section.className = 'results-section';
+      section.innerHTML = `<div class="results-section-title ${def.cls}">${SECTION_ICONS[def.key]} ${def.title}</div>`;
+      states.forEach(s => {
+        const note = getNoteForState(s);
+        section.innerHTML += `
+          <div class="result-row ${def.key}">
+            <div class="result-dot ${def.key}"></div>
+            <div>
+              <div class="result-state">${s.name}</div>
+              <div class="result-status ${def.key}">${STATUS_LABELS[def.key]}</div>
+              <div class="result-rationale">${note}${s.source ? ` <a class="source-link" href="${s.source}" target="_blank">View source ↗</a>` : ''}</div>
+            </div>
+          </div>`;
+      });
+      body.appendChild(section);
+    });
+  }
+
+  function restart() {
+    answers = { productType: null, softwareType: null, bundled: null, contentType: null, contentAccess: null, customerType: null, physicalPresence: null, physicalStates: new Set(), states: new Set() };
+    document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('branch-bundling').classList.add('hidden');
+    document.getElementById('branch-digital').classList.add('hidden');
+    document.getElementById('branch-software').classList.add('hidden');
+    document.getElementById('branch-content-access').classList.add('hidden');
+    document.getElementById('tic-container').innerHTML = '';
+    document.getElementById('q1-next').disabled = true;
+    document.getElementById('q2-next').disabled = true;
+    document.getElementById('q3-next').disabled = true;
+    document.getElementById('q4-next').disabled = true;
+    document.getElementById('physical-state-selector').classList.add('hidden');
+    document.querySelectorAll('#physical-state-grid .state-chip').forEach(c => c.classList.remove('selected'));
+    updatePhysicalStateCountLabel();
+    clearAllStates();
+    show('screen-intro');
+  }
+</script>
+</body>
+</html>
